@@ -1,2 +1,2 @@
 # CPE487
-Files for cpe-487 class
+Files and programs for Digital System Design
