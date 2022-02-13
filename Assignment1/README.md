@@ -1,4 +1,4 @@
-#Assignment 1
+# Assignment 1
 
 Examples of a 2x2 bit multiplier in VDHL
 
