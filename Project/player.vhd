@@ -27,63 +27,139 @@ ARCHITECTURE Behavioral OF player IS
 	CONSTANT pheight : INTEGER := 10;
 	
 	--player signals
+	SIGNAL Spawnx : INTEGER := 500;
+	SIGNAL Spawny : INTEGER := 500;
 	SIGNAL p_x :INTEGER := 50;
 	SIGNAL p_y : INTEGER := 500;
 	SIGNAL pl_on : std_logic;
 	SIGNAL jumping : STD_LOGIC;
+	SIGNAL pl_hit : std_logic;
+	SIGNAL can_jump : std_logic; -- condition for player to be able to jump
 	
 	
 
 	--enemy signals
-	CONSTANT ewidth : INTEGER := 5;
-	CONSTANT eheight : INTEGER := 5;
+	CONSTANT ewidth : INTEGER := 20;
+	CONSTANT eheight : INTEGER := 20;
 	SIGNAL edirect : std_logic; --movement direction
-	SIGNAL e_x : STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(700,11);
-	SIGNAL e_y : STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(500,11);
+	SIGNAL e_x : STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(400,11);
+	SIGNAL e_y : STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(400,11);
 	SIGNAL e_on : STD_LOGIC;
 	
-
+	CONSTANT eXmin : INTEGER := 100; -- defines box for edges of enemy motion
+	CONSTANT eXmax : INTEGER := 700;
+	CONSTANT eYmin : INTEGER := 100;
+	CONSTANT eYMax : INTEGER := 485;
+	SIGNAL eYspeed : INTEGER := 5;
+	SIGNAL eXspeed : INTEGER := 5;
+	SIGNAL eXdirect : std_logic;
+	SIGNAL eYdirect : std_logic; 
+	
 	--platform signals
 	
-	SIGNAL plat_x : STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(200,11);
-	SIGNAL plat_y : STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(460,11);
+	--platform 0
+	SIGNAL plat_x : INTEGER := 100;
+	SIGNAL plat_y : INTEGER := 360;
 	CONSTANT platw :  STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(200,11);
 	CONSTANT plath :  STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(10,11);
 	
-	SIGNAL plat_on : std_logic; --drawing singal for platform 0 above
-	
-	SIGNAL plat1_x : STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(450,11);
-	SIGNAL plat1_y : STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(440,11);
+	SIGNAL plat_on : std_logic; 
+	--platform 1
+	SIGNAL plat1_x : INTEGER := 350;
+	SIGNAL plat1_y : INTEGER := 340;
 	CONSTANT plat1w :  STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(200,11);
 	CONSTANT plat1h :  STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(10,11);
 	
-	SIGNAL plat1_on : std_logic; --drawing singal for spawn platform 1 above
-	
-	SIGNAL plat2_x : STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(600,11);
-	SIGNAL plat2_y : STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(400,11);
+	SIGNAL plat1_on : std_logic; 
+	--platform 2
+	SIGNAL plat2_x : INTEGER := 600;
+	SIGNAL plat2_y : INTEGER := 320;
 	CONSTANT plat2w :  STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(200,11);
 	CONSTANT plat2h :  STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(10,11);
 	
-	SIGNAL plat2_on : std_logic; --drawing singal for spawn platform 2 above
+	SIGNAL plat2_on : std_logic; 
 	
-	-- spawn platform below, always under player spawn
-	SIGNAL platS_x : STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(20,11);
-	SIGNAL platS_y : STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(510,11);
+	-- spawn platform 
+	SIGNAL platS_x : INTEGER := 100;
+	SIGNAL platS_y : INTEGER := 510;
 	CONSTANT platSw :  STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(600,11);
 	CONSTANT platSh :  STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(10,11);
 	
-	SIGNAL platS_on : std_logic; --drawing singal for spawn platform above
+	SIGNAL platS_on : std_logic; 
 	
-	SIGNAL can_jump : std_logic; -- condition for player to be able to jump
+	--Portal signals
 	
---add a process to change the level # when the player moves to the edge, it can change the platoform position
+	SIGNAL portal_on : std_logic;
+	SIGNAL pl_on_portal : std_logic;
+	
+	SIGNAL portal_x : INTEGER := 700; 
+	SIGNAL portal_y : INTEGER := 100;
+	CONSTANT portalw :  STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(50,11);
+	CONSTANT portalh :  INTEGER := 50;
+	
+	SIGNAL level : STD_LOGIC_VECTOR(10 downto 0) := conv_std_logic_vector(1,11);
+	
+-- increase jump height
+--add levels, moving platoforms??
+     --moving platofrms need  a reset function in the changelevel for when the player falls off the edge
 --add a enemy hitboxes and and damage (partially done)
+   --make enemy move more
+-- health bar updates too fast
+-- enemy hitbox in inaccurate, maybe was vsync to edraw??
+
 -- add more enemies(hitbox edits)
+
 BEGIN
+    
     red <= pl_on or e_on or h_on;
-    green <= pl_on;
-    blue <= pl_on or plat_on or platS_on or plat1_on or plat2_on;
-    -- new platforms need new draw funciton, signals, and edits to checkjump
+    green <= pl_on or portal_on;
+    blue <= pl_on or plat_on or platS_on or plat1_on or plat2_on or portal_on;
+    
+    pl_hit <= pl_on and e_on; 
+    levelcontroller : process is
+    begin
+        wait until rising_edge(v_sync);
+        if (pl_on_portal = '1') then
+            level <= level + 1;
+            plat2_x <= 600;
+            plat2_y <= 410;
+            plat1_x <= 350;
+            plat1_y <= 310;
+            plat_x <= 100;
+            plat_y <= 410;
+            platS_x <= 120;
+            platS_y <= 510;
+            portal_x <= 425;
+            portal_y <= 100;
+            
+            Spawnx <= 350;
+           
+             
+            
+            wait for 500ms;
+            --move player and platforms to new locations, move platfrom before player
+        end if;
+           
+        
+    end process;
+    portaldraw : process (pixel_row,pixel_col,portal_x,portal_y) IS
+    begin
+    if (pixel_col < portal_x + portalw) and (pixel_col > portal_x) and (pixel_row > portal_y) and (pixel_row < portalh + portal_y) THEN
+	       portal_on <= '1';
+	else
+	       portal_on <= '0';
+	end if;
+	end process;
+	
+	checkportal : process (p_x, p_y) is
+	begin
+	if (p_x < portal_x + portalw) and (p_x > portal_x) and (p_y > portal_y) and (p_y < portalh + portal_y) then
+	   pl_on_portal <= '1';
+	else
+	   pl_on_portal <= '0';
+	end if;
+	end process;
+	
     platSdraw : process (pixel_row,pixel_col,platS_x,platS_y) IS
     begin
     if (pixel_col < platS_x + platSw) and (pixel_col > platS_x) and (pixel_row > platS_y) and (pixel_row < platSh + platS_y) THEN
@@ -120,7 +196,7 @@ BEGIN
 	end process;
     
 
-    hdraw : process (Health,pixel_row,pixel_col) IS --draws healthbat on screen, uses Health signal as the width
+    hdraw : process (Health,pixel_row,pixel_col) IS --draws health on screen, uses Health signal as the width
     begin -- Draws healthbar starting at 40,40
         if ((pixel_col >= 40 - Health) OR (40 <= Health)) AND pixel_col <= 40 + Health AND pixel_row >= 40 - HBarHeight AND pixel_row <= 40 + HBarHeight THEN
 	       h_on <= '1';
@@ -132,14 +208,12 @@ BEGIN
     
     hset : process IS --controlles palyer health
     begin
-        wait until rising_edge(v_sync);
-        
-        -- (p_x + pwidth > e_x) and (p_x < e_x + ewidth) <- works for x-dimention hitboxes
-        -- add y coordinate check
-        if (p_x + pwidth > e_x) and (p_x < e_x + ewidth) then 
-            Health <= Health - 100;
+        if pl_hit = '1' then
+            Health <= Health - 50;
+            wait for 500ms;
         end if;
-        
+            
+   
     end process;
     
     pldraw : process (p_x,p_y,pixel_row, pixel_col) IS
@@ -154,45 +228,55 @@ BEGIN
 	pmove : process is begin
 	   wait until rising_edge (v_sync);
 	   if (btnl = '1') then -- move left
-	       p_x <= p_x - 6;
+	       p_x <= p_x - 10;
 	       wait for 10 ms;
 	   end if;
 	   if (btnr = '1') then -- move right
-	       p_x <= p_x + 6;
+	       p_x <= p_x + 10;
 	       wait for 10 ms;
 	   end if;
-	 
-	   
-	end process;
-	checkjump : process is --bug, player cannot jump high enough to test platform......
-	begin
-	wait until rising_edge(v_sync);
-	-- first checks if the player is on the ground, then if it is on a platform
-	--(p_y > 500) or (p_y = 500) <- code for ground at 500, not needed with platforms as ground
-	-- changed player drawing, and logic for plat0 (leftmost non-spawn platform) if works, redo the rest of the logic
-	if (((p_y > plat_y - 10) and (p_y < plat_y)) and (p_x > plat_x and (p_x < plat_x + platw))) or (((p_y > platS_y - 15) and (p_y < platS_y)) and (p_x > platS_x and (p_x < platS_x + platSw))) or (((p_y > plat1_y - 15) and (p_y < plat1_y)) and (p_x > plat1_x and (p_x < plat1_x + plat1w))) or (((p_y > plat2_y - 15) and (p_y < plat2_y)) and (p_x > plat2_x and (p_x < plat2_x + plat2w))) then
-	   can_jump <= '1'; --add a new check for each additional platform
-	else
-	   can_jump <= '0';
-    end if;
-	
-	end process;
-	jump : process is begin  -- allow player to jump if they are on the ground
-	   wait until rising_edge(v_sync);
+	   --jumping and gravity below
 	   if ((btnu = '1') and (can_jump = '1')) THEN
 	       
 	       jumping <= '1';
-	       p_y <= p_y - 100; -- makes jumping more smooth, and not a teleport (temp at 100 for testing)
+	       p_y <= p_y - 200; -- makes jumping more smooth, and not a teleport (temp at 100 for testing)
 	       wait for 1 sec;
-	       p_y <= p_y - 30;
+	       p_y <= p_y - 100;
 	       jumping <= '0';
 	       wait for 1 sec;
 	   
 	   elsif (can_jump = '0') THEN -- gravity (only affects player when they do not meet jumping conditions)
 	       
 	       p_y <= p_y + 3;
-	       wait for 150 ms; 
+	       wait for 150 ms;
+	   end if; 
+	   
+	   if (p_y > 600) then --resets player to spawn if they fall too low
+	       p_x <= Spawnx;
+	       p_y <= Spawny;
+	   
 	   end if;
+	   
+	   if (pl_on_portal = '1') then -- moves player to level spawn when level changes
+	       wait for 50 ms;
+	       p_x <= Spawnx;
+	       p_y <= Spawny;
+	       wait for 500 ms;
+	       
+	   end if;
+	end process;
+	
+	
+	checkjump : process is --bug, player cannot jump high enough to test platform......
+	begin
+	wait until rising_edge(v_sync);
+	
+	if (((p_y > plat_y - 10) and (p_y < plat_y)) and (p_x > plat_x and (p_x < plat_x + platw))) or (((p_y > platS_y - 15) and (p_y < platS_y)) and (p_x > platS_x and (p_x < platS_x + platSw))) or (((p_y > plat1_y - 15) and (p_y < plat1_y)) and (p_x > plat1_x and (p_x < plat1_x + plat1w))) or (((p_y > plat2_y - 15) and (p_y < plat2_y)) and (p_x > plat2_x and (p_x < plat2_x + plat2w))) then
+	   can_jump <= '1'; --add a new check for each additional platform
+	else
+	   can_jump <= '0';
+    end if;
+	
 	end process;
 	edraw : process(e_x, e_y, pixel_row, pixel_col) is begin -- inside () = sensitivity list
 	   if ((pixel_col >= e_x - ewidth) OR (e_x <= ewidth)) AND pixel_col <= e_x + ewidth AND pixel_row >= e_y - eheight AND pixel_row <= e_y + eheight THEN
@@ -202,20 +286,33 @@ BEGIN
 	   end if;
 	end process;
 	
-	enemy : process is begin --move left and right between 200 and 750 x positions
+	enemy : process is begin -- controls enemy movement
 	   wait until rising_edge(v_sync);
-	   if edirect = '0' then 
-	       e_x <= e_x - 3;
+	   if eXdirect = '1' then
+	       e_x <= e_x + eXspeed;
 	   else
-	       e_x <= e_x + 3;
+	       e_x <= e_x - eXspeed;
 	   end if;
 	   
-	   if e_x < 200 then --if less than 200, change direction
-	       edirect <= not edirect;
-	       e_x <= e_x + 5; --stop it from getting stuck?
-	   elsif e_x > 750 then -- if greater than 750, change direction
-	       edirect <= not edirect;
-	       e_x <= e_x - 5; --stops it from getting stuck
+	   if eYdirect = '1' then
+	       e_y <= e_y + eYspeed;
+	   else
+	       e_y <= e_y - eYspeed;
+	   end if;
+	   
+	   if (e_x < eXmin) then
+	       eXdirect <= not eXdirect;
+	       e_x <= e_x + eXspeed * 2;
+	   elsif (e_x > eXmax) then
+	       eXdirect <= not eXdirect;
+	       e_x <= e_X - eXspeed * 2;
+	   elsif (e_y < eYmin) then
+	       eYdirect <= not eYdirect;
+	       e_y <= e_y + eYspeed * 3;
+	   elsif (e_y > eYmax) then
+	       eYdirect <= not eYdirect;
+	       e_y <= e_y - eYspeed * 3;
+	  
 	   end if;
 	   
 	   wait for 100 ms;
