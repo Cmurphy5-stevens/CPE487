@@ -100,8 +100,7 @@ ARCHITECTURE Behavioral OF player IS
 	SIGNAL level : STD_LOGIC_VECTOR(10 downto 0) := conv_std_logic_vector(1,11);
 	
 
-   
--- health bar updates too fast
+  
 
 
 BEGIN
