@@ -11,7 +11,7 @@ The project focuses on using the FPGA board and its VGA output to create a platf
  - Hitting the enemy will deplete the healthbar at the top of the screen.
  - The enemy is designed to bounce off of the edges of the screen to be more unpredictable to dodge. 
 
-##Description:
+## Description:
 
  The code for this project uses a combination of normal VHDL statements and sequential processes to control how
  the player, enemy, and levels behave. The are separate processes for handling movement and drawing of objects. 
