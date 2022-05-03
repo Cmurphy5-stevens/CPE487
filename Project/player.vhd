@@ -59,21 +59,21 @@ ARCHITECTURE Behavioral OF player IS
 	
 	--platform 0
 	SIGNAL plat_x : INTEGER := 100;
-	SIGNAL plat_y : INTEGER := 360;
+	SIGNAL plat_y : INTEGER := 410;
 	CONSTANT platw :  STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(200,11);
 	CONSTANT plath :  STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(10,11);
 	
 	SIGNAL plat_on : std_logic; 
 	--platform 1
 	SIGNAL plat1_x : INTEGER := 350;
-	SIGNAL plat1_y : INTEGER := 340;
+	SIGNAL plat1_y : INTEGER := 390;
 	CONSTANT plat1w :  STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(200,11);
 	CONSTANT plat1h :  STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(10,11);
 	
 	SIGNAL plat1_on : std_logic; 
 	--platform 2
 	SIGNAL plat2_x : INTEGER := 600;
-	SIGNAL plat2_y : INTEGER := 320;
+	SIGNAL plat2_y : INTEGER := 370;
 	CONSTANT plat2w :  STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(200,11);
 	CONSTANT plat2h :  STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(10,11);
 	
@@ -93,21 +93,16 @@ ARCHITECTURE Behavioral OF player IS
 	SIGNAL pl_on_portal : std_logic;
 	
 	SIGNAL portal_x : INTEGER := 700; 
-	SIGNAL portal_y : INTEGER := 100;
+	SIGNAL portal_y : INTEGER := 300;
 	CONSTANT portalw :  STD_LOGIC_VECTOR(10 downto 0) := CONV_STD_LOGIC_VECTOR(50,11);
 	CONSTANT portalh :  INTEGER := 50;
 	
 	SIGNAL level : STD_LOGIC_VECTOR(10 downto 0) := conv_std_logic_vector(1,11);
 	
--- increase jump height
---add levels, moving platoforms??
-     --moving platofrms need  a reset function in the changelevel for when the player falls off the edge
---add a enemy hitboxes and and damage (partially done)
-   --make enemy move more
--- health bar updates too fast
--- enemy hitbox in inaccurate, maybe was vsync to edraw??
 
--- add more enemies(hitbox edits)
+   
+-- health bar updates too fast
+
 
 BEGIN
     
@@ -122,15 +117,15 @@ BEGIN
         if (pl_on_portal = '1') then
             level <= level + 1;
             plat2_x <= 600;
-            plat2_y <= 410;
+            plat2_y <= 390;
             plat1_x <= 350;
-            plat1_y <= 310;
+            plat1_y <= 340;
             plat_x <= 100;
-            plat_y <= 410;
+            plat_y <= 390;
             platS_x <= 120;
             platS_y <= 510;
             portal_x <= 425;
-            portal_y <= 100;
+            portal_y <= 220;
             
             Spawnx <= 350;
            
@@ -206,10 +201,10 @@ BEGIN
     
     end process;
     
-    hset : process IS --controlles palyer health
+    hset : process IS --controlls palyer health
     begin
         if pl_hit = '1' then
-            Health <= Health - 50;
+            Health <= Health - 2; 
             wait for 500ms;
         end if;
             
@@ -239,9 +234,9 @@ BEGIN
 	   if ((btnu = '1') and (can_jump = '1')) THEN
 	       
 	       jumping <= '1';
-	       p_y <= p_y - 200; -- makes jumping more smooth, and not a teleport (temp at 100 for testing)
+	       p_y <= p_y - 150; -- makes jumping more smooth, and not a teleport (temp at 100 for testing)
 	       wait for 1 sec;
-	       p_y <= p_y - 100;
+	       p_y <= p_y - 60;
 	       jumping <= '0';
 	       wait for 1 sec;
 	   
